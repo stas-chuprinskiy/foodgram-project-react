@@ -2,11 +2,16 @@ from django.db import models
 
 
 class Tag(models.Model):
-    # name
-    # color
-    # slug
+    name = models.CharField(max_length=40, verbose_name='name')
+    color = models.CharField(max_length=16, verbose_name='color')
+    slug = models.SlugField(unique=True, verbose_name='slug')
 
-    pass
+    class Meta:
+        verbose_name = 'tag'
+        verbose_name_plural = 'tags'
+
+    def __str__(self):
+        return self.name
 
 
 class Ingredient(models.Model):
