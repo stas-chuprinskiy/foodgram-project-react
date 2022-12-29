@@ -1,14 +1,18 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(str(BASE_DIR.parent) + '/infra/.env')
+
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-DEBUG = True
+DEBUG = True  # change before deploy
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # change before deploy
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -31,6 +35,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'foodgram.urls'
 
+# TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -51,10 +57,16 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME', default='postgres'),
+        'USER': os.getenv('DB_USER', default='postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', default='postgres'),
+        'HOST': os.getenv('DB_HOST', default='postgres'),
+        'PORT': os.getenv('DB_PORT', default='postgres'),
     }
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -81,4 +93,49 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# MEDIA_URL = 'media/'
+
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# AUTH_USER_MODEL = 'users.User'
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#     ),
+
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAuthenticated',
+#     ),
+
+#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+#     'PAGE_SIZE': 5,
+# }
+
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+# }
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'console': {
+#             'format': '%(asctime)s | %(levelname)s | %(message)s'
+#         },
+#     },
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'console'
+#         },
+#     },
+#     'loggers': {
+#         'reviews.management.commands.add_test_data_in_db': {
+#             'level': 'DEBUG',
+#             'handlers': ('console', )
+#         }
+#     }
+# }
