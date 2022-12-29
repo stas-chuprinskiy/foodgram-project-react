@@ -15,10 +15,17 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    # name
-    # measurement_unit
+    name = models.CharField(max_length=150, verbose_name='name')
+    measurement_unit = models.CharField(
+        max_length=150, verbose_name='measurement unit'
+    )
 
-    pass
+    class Meta:
+        verbose_name = 'ingredient'
+        verbose_name_plural = 'ingredients'
+
+    def __str__(self):
+        return self.name[:40]
 
 
 class Recipe(models.Model):
