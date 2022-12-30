@@ -136,7 +136,20 @@ class Favorite(models.Model):
 
 
 class Subscription(models.Model):
-    # user
-    # author
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='follower',
+        verbose_name='follower'
+    )
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='author',
+        verbose_name='author'
+    )
 
-    pass
+    class Meta:
+        verbose_name = 'subscription'
+        verbose_name_plural = 'subscriptions'
+
+    def __str__(self):
+        return (
+            f'Follower: {self.user.id} <---> Author: {self.author.id}'
+        )
