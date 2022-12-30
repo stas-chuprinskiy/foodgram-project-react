@@ -96,10 +96,23 @@ class RecipeIngredient(models.Model):
 
 
 class ShoppingCart(models.Model):
-    # user
-    # recipe
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='shopping_cart',
+        verbose_name='user'
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='shopping_cart',
+        verbose_name='recipe'
+    )
 
-    pass
+    class Meta:
+        verbose_name = 'shopping cart'
+        verbose_name_plural = 'shopping carts'
+
+    def __str__(self):
+        return (
+            f'User: {self.user.id} <---> Recipe: {self.recipe.id}'
+        )
 
 
 class Favorite(models.Model):
