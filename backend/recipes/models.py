@@ -97,11 +97,11 @@ class RecipeIngredient(models.Model):
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='shopping_cart',
+        User, on_delete=models.CASCADE, related_name='shopping_carts',
         verbose_name='user'
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='shopping_cart',
+        Recipe, on_delete=models.CASCADE, related_name='shopping_carts',
         verbose_name='recipe'
     )
 
@@ -116,10 +116,23 @@ class ShoppingCart(models.Model):
 
 
 class Favorite(models.Model):
-    # user
-    # recipe
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='favorites',
+        verbose_name='user'
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='favorites',
+        verbose_name='recipe'
+    )
 
-    pass
+    class Meta:
+        verbose_name = 'favorite'
+        verbose_name_plural = 'favorites'
+
+    def __str__(self):
+        return (
+            f'User: {self.user.id} <---> Recipe: {self.recipe.id}'
+        )
 
 
 class Subscription(models.Model):
