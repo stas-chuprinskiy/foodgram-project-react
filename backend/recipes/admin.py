@@ -37,10 +37,16 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
-    list_display = ('recipe', 'ingredient', 'amount', )
+    list_display = ('recipe', 'ingredient', 'amount', 'measurement_unit', )
     search_fields = ('recipe__name', 'ingredient__name', )
     search_help_text = 'RECIPE OR INGREDIENT NAME'
     list_per_page = 50
+
+    readonly_fields = ('measurement_unit', )
+
+    def measurement_unit(self, obj):
+        return obj.ingredient.measurement_unit
+    measurement_unit.short_description = 'Measurement unit'
 
 
 @admin.register(ShoppingCart)

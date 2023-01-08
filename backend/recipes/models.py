@@ -54,9 +54,8 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient, through='RecipeIngredient'
     )
-    tags = models.ForeignKey(
-        Tag, on_delete=models.SET_NULL, null=True, related_name='recipes',
-        verbose_name='tags'
+    tags = models.ManyToManyField(
+        Tag, related_name='recipes_set', verbose_name='tags'
     )
 
     class Meta:
