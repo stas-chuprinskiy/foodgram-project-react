@@ -133,3 +133,7 @@ dmypy.json
 
 # requirements-dev
 requirements-dev.txt
+
+# media
+media/
+static/

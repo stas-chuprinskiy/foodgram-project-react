@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(str(BASE_DIR.parent) + '/infra/.env')
+ENV_FILE = BASE_DIR.parent.joinpath('infra/.env')
+
+load_dotenv(ENV_FILE)
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
@@ -65,8 +67,8 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB', default='postgres'),
         'USER': os.getenv('POSTGRES_USER', default='postgres'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
-        'HOST': os.getenv('DB_HOST', default='postgres'),
-        'PORT': os.getenv('DB_PORT', default='postgres'),
+        'HOST': os.getenv('DB_HOST', default='127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', default='5432'),
     }
 }
 
@@ -99,11 +101,33 @@ AUTH_USER_MODEL = 'users.User'
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_ROOT = BASE_DIR.joinpath('static')
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_ROOT = BASE_DIR.joinpath('media')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'console': {
+            'format': '%(asctime)s | %(levelname)s | %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console'
+        },
+    },
+    'loggers': {
+        'recipes.management.commands.add_ingredients': {
+            'level': 'INFO',
+            'handlers': ('console', )
+        }
+    }
+}
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -120,26 +144,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # SIMPLE_JWT = {
 #     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-# }
-
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'console': {
-#             'format': '%(asctime)s | %(levelname)s | %(message)s'
-#         },
-#     },
-#     'handlers': {
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'console'
-#         },
-#     },
-#     'loggers': {
-#         'reviews.management.commands.add_test_data_in_db': {
-#             'level': 'DEBUG',
-#             'handlers': ('console', )
-#         }
-#     }
 # }
