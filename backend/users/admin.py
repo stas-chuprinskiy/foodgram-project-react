@@ -23,8 +23,8 @@ class UserAdmin(admin.ModelAdmin):
                 'date_joined',
             }
 
-        for f in disabled_fields:
-            if f in form.base_fields:
-                form.base_fields[f].disabled = True
+        for field in disabled_fields:
+            if field in form.base_fields:
+                form.base_fields[field].disabled = True
 
         return form
