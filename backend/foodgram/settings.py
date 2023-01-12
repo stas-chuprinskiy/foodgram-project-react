@@ -152,9 +152,8 @@ REST_FRAMEWORK = {
 DJOSER = {
     'LOGOUT_ON_PASSWORD_CHANGE': True,
     'SERIALIZERS': {
-        'user': 'api.serializers.CustomUserSerializer'
-    },
-    'PERMISSIONS': {
-        'user': ['rest_framework.permissions.AllowAny'],
+        'user_create': 'api.serializers.CustomUserCreateSerializer',
+        'user': 'api.serializers.CustomUserSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
     },
 }

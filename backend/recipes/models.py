@@ -52,7 +52,7 @@ class Recipe(models.Model):
         verbose_name='cooking time', help_text='integer in minutes'
     )
     ingredients = models.ManyToManyField(
-        Ingredient, through='RecipeIngredient'
+        Ingredient, through='RecipeIngredient',
     )
     tags = models.ManyToManyField(
         Tag, related_name='recipes_set', verbose_name='tags'
