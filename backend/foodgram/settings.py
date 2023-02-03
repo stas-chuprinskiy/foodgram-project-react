@@ -11,9 +11,9 @@ load_dotenv(ENV_FILE)
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-DEBUG = True  # change before deploy
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']  # change before deploy
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -24,13 +24,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'api',
-    'core',
     'recipes',
     'users',
 
+    'djoser',
     'rest_framework',
     'rest_framework.authtoken',
-    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -68,9 +67,9 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': os.getenv('POSTGRES_DB', default='postgres'),
-        'USER': os.getenv('POSTGRES_USER', default='postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
+        'NAME': os.getenv('DB_NAME', default='postgres'),
+        'USER': os.getenv('DB_USER', default='postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', default='postgres'),
         'HOST': os.getenv('DB_HOST', default='127.0.0.1'),
         'PORT': os.getenv('DB_PORT', default='5432'),
     }
@@ -143,7 +142,7 @@ REST_FRAMEWORK = {
     ),
 
     'DEFAULT_PAGINATION_CLASS': (
-        'rest_framework.pagination.PageNumberPagination'
+        'api.pagination.CustomPagination'
     ),
 
     'PAGE_SIZE': 5,
