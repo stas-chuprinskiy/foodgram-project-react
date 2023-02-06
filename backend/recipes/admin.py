@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Favorite, Subscription)
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart,  Subscription, Tag)
 
 
 @admin.register(Tag)
@@ -20,33 +20,22 @@ class IngredientAdmin(admin.ModelAdmin):
     list_per_page = 50
 
 
+class RecipeIngredientAdminInline(admin.TabularInline):
+    model = RecipeIngredient
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    readonly_fields = ('favorites', )
     list_display = ('name', 'author', )
     list_filter = ('author', 'tags', )
     search_fields = ('name', )
     search_help_text = 'NAME'
     list_per_page = 50
-
-    readonly_fields = ('favorites', )
+    inlines = [RecipeIngredientAdminInline, ]
 
     def favorites(self, obj):
         return obj.favorites.count()
-    favorites.short_description = 'In favorites'
-
-
-@admin.register(RecipeIngredient)
-class RecipeIngredientAdmin(admin.ModelAdmin):
-    list_display = ('recipe', 'ingredient', 'amount', 'measurement_unit', )
-    search_fields = ('recipe__name', 'ingredient__name', )
-    search_help_text = 'RECIPE OR INGREDIENT NAME'
-    list_per_page = 50
-
-    readonly_fields = ('measurement_unit', )
-
-    def measurement_unit(self, obj):
-        return obj.ingredient.measurement_unit
-    measurement_unit.short_description = 'Measurement unit'
 
 
 @admin.register(ShoppingCart)
