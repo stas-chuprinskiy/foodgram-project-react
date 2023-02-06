@@ -12,9 +12,7 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'tag'
         verbose_name_plural = 'tags'
-        indexes = [
-            models.Index(fields=['slug'], name='tag_slug_idx'),
-        ]
+        ordering = ('pk', )
 
     def __str__(self):
         return self.name
@@ -29,8 +27,9 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'ingredient'
         verbose_name_plural = 'ingredients'
+        ordering = ('pk', )
         indexes = [
-            models.Index(fields=['name'], name='ing_name_idx'),
+            models.Index(fields=['name'], name='ingredient_name_idx'),
         ]
 
     def __str__(self):
@@ -54,9 +53,7 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient, through='RecipeIngredient',
     )
-    tags = models.ManyToManyField(
-        Tag, related_name='recipes_set', verbose_name='tags'
-    )
+    tags = models.ManyToManyField(Tag, verbose_name='tags')
 
     class Meta:
         verbose_name = 'recipe'
@@ -67,9 +64,6 @@ class Recipe(models.Model):
                 check=models.Q(cooking_time__gt=0),
                 name='rec_cooking_time_gt_0'
             ),
-        ]
-        indexes = [
-            models.Index(fields=['name'], name='rec_name_idx'),
         ]
 
     def __str__(self):
@@ -92,6 +86,7 @@ class RecipeIngredient(models.Model):
     class Meta:
         verbose_name = 'recipe and ingredient'
         verbose_name_plural = 'recipes and ingredients'
+        ordering = ('pk', )
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'ingredient'],
@@ -110,17 +105,18 @@ class RecipeIngredient(models.Model):
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='shopping_carts',
+        User, on_delete=models.CASCADE, related_name='shopping_cart',
         verbose_name='user'
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='shopping_carts',
+        Recipe, on_delete=models.CASCADE, related_name='shopping_cart',
         verbose_name='recipe'
     )
 
     class Meta:
         verbose_name = 'shopping cart'
         verbose_name_plural = 'shopping carts'
+        ordering = ('pk', )
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'], name='shop_user_recipe_unique'
@@ -146,6 +142,7 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'favorite'
         verbose_name_plural = 'favorites'
+        ordering = ('pk', )
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'], name='fav_user_recipe_unique'
@@ -171,6 +168,7 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = 'subscription'
         verbose_name_plural = 'subscriptions'
+        ordering = ('pk', )
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'], name='sub_user_author_unique'
