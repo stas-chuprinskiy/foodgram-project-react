@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <title>Список покупок | Foodgram</title>
+  </head>
+  <body>
+    <h1>Привет, {{ user.first_name }} {{ user.last_name }}!</h1>
+
+    <h3>Список блюд к приготовлению</h3>
+    <ul>
+        {% for recipe in recipes %}
+        <li>{{ recipe.name }}</li>
+        {% endfor %}
+    </ul>
+    
+    <h3>Для этого тебе понадобятся следующие ингредиенты</h3>
+    <ul>
+        {% for ingredient in ingredients %}
+        <li>{{ ingredient.name }} - {{ ingredient.total_amount }}, {{ ingredient.measurement_unit }}</li>
+        {% endfor %}
+    </ul>
+  
+    <i>Твой продуктовый помощник Foodgram :)</i>
+  </body>
+</html>
