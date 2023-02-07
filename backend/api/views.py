@@ -1,17 +1,19 @@
+from io import BytesIO
+
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.template import loader
+from django.template.loader import get_template
 from djoser.views import UserViewSet
-from pdfkit import from_string
+
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.mixins import (CreateModelMixin, DestroyModelMixin,
                                    ListModelMixin, RetrieveModelMixin)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from xhtml2pdf import pisa
 
 from api.permissions import IsOwnerOrReadOnly
 from api.serializers import (CommonRecipeSerializer, FavoriteSerializer,
@@ -26,20 +28,28 @@ User = get_user_model()
 
 class CustomUserViewSet(UserViewSet):
 
+    @action(["get", "put", "patch", "delete"], detail=False,
+            permission_classes=[IsAuthenticated, ])
+    def me(self, request, *args, **kwargs):
+        self.get_object = self.get_instance
+        if request.method == "GET":
+            return self.retrieve(request, *args, **kwargs)
+        elif request.method == "PUT":
+            return self.update(request, *args, **kwargs)
+        elif request.method == "PATCH":
+            return self.partial_update(request, *args, **kwargs)
+        elif request.method == "DELETE":
+            return self.destroy(request, *args, **kwargs)
+
     @action(detail=False, methods=['GET', ],
             permission_classes=[IsAuthenticated, ])
     def subscriptions(self, request):
-        queryset = User.objects.filter(followers__user=request.user)
+        following_users = User.objects.filter(followers__user=request.user)
         serializer = SubscriptionSerializer
         context = {'request': request}
-
-        page = self.paginate_queryset(queryset)
-        if page:
-            serializer = serializer(page, context=context, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = serializer(queryset, context=context, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        page = self.paginate_queryset(following_users)
+        serializer = serializer(page, context=context, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class TagViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
@@ -94,30 +104,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         user = request.user
         recipes = Recipe.objects.filter(shopping_cart__user=user)
-
-        if not recipes:
-            raise ValidationError(
-                {'detail': 'Your shopping cart is empty.'}
-            )
-
         ingredients = Ingredient.objects.filter(
             recipes_set__recipe__shopping_cart__user=user
         ).annotate(
             total_amount=Sum('recipes_set__amount')
         )
-
         context = {
             'user': user,
             'recipes': recipes,
             'ingredients': ingredients
         }
 
-        html = loader.render_to_string('shopping_cart.html', context=context)
-        output = from_string(html, output_path=False)
-        response = HttpResponse(content_type='application/pdf')
-        response.write(output)
-
-        return response
+        template = get_template('shopping_cart.html')
+        html = template.render(context)
+        response = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode('UTF-8')), response)
+        if pdf.err:
+            return HttpResponse('We had some errors :(')
+        return HttpResponse(
+            response.getvalue(), content_type='application/pdf'
+        )
 
 
 class BaseViewSet(CreateModelMixin, DestroyModelMixin,

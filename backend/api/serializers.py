@@ -26,7 +26,7 @@ class CustomUserSerializer(UserSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if request.user.is_authenticated:
-            return obj.following.filter(author=request.user).exists()
+            return request.user.following.filter(author=obj).exists()
         return False
 
 
@@ -58,6 +58,13 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = ('id', 'name', 'measurement_unit', 'amount', )
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                '"amount" must be greater than 0.'
+            )
+        return value
 
 
 class Base64ImageField(serializers.ImageField):
@@ -123,9 +130,15 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         for obj in ingredients_set:
             ingredient, amount = {**obj}.values()
-            RecipeIngredient.objects.create(
-                ingredient=ingredient['id'], recipe=recipe, amount=amount
+            recipe_ingredient = RecipeIngredient.objects.filter(
+                ingredient=ingredient['id'], recipe=recipe
             )
+            if recipe_ingredient.exists():
+                recipe_ingredient.update(amount=amount)
+            else:
+                RecipeIngredient.objects.create(
+                    ingredient=ingredient['id'], recipe=recipe, amount=amount
+                )
 
         return recipe
 
@@ -139,7 +152,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             )
 
         if 'tags' in validated_data:
-            instance.tags.through.objects.all().delete()
+            instance.tags.clear()
 
             tags = validated_data.pop('tags')
             for tag in tags:
@@ -151,10 +164,16 @@ class RecipeSerializer(serializers.ModelSerializer):
             ingredients_set = validated_data.pop('ingredients_set')
             for obj in ingredients_set:
                 ingredient, amount = {**obj}.values()
-
-                RecipeIngredient.objects.create(
-                    ingredient=ingredient['id'], recipe=instance, amount=amount
+                recipe_ingredient = RecipeIngredient.objects.filter(
+                    ingredient=ingredient['id'], recipe=instance
                 )
+                if recipe_ingredient.exists():
+                    recipe_ingredient.update(amount=amount)
+                else:
+                    RecipeIngredient.objects.create(
+                        ingredient=ingredient['id'], recipe=instance,
+                        amount=amount
+                    )
 
         instance.save()
         return instance
@@ -212,12 +231,9 @@ class SubscriptionSerializer(CustomUserSerializer):
         recipes_limit = (
             self.context.get('request').query_params.get('recipes_limit')
         )
-        if recipes_limit:
-            if not recipes_limit.isdigit():
-                raise serializers.ValidationError(
-                    '"recipes_limit" must be a positive integer number.'
-                )
+        if recipes_limit and recipes_limit.isdigit():
             recipes = recipes[:int(recipes_limit)]
+
         return CommonRecipeSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):

@@ -102,9 +102,9 @@ USE_TZ = True
 
 AUTH_USER_MODEL = 'users.User'
 
-STATIC_URL = '/static/'
+STATIC_URL = '/static_backend/'
 
-STATIC_ROOT = BASE_DIR.joinpath('static')
+STATIC_ROOT = BASE_DIR.joinpath('static_backend')
 
 MEDIA_URL = '/media/'
 
@@ -149,10 +149,14 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    'LOGOUT_ON_PASSWORD_CHANGE': True,
     'SERIALIZERS': {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
         'user': 'api.serializers.CustomUserSerializer',
         'current_user': 'api.serializers.CustomUserSerializer',
     },
+    'PERMISSIONS': {
+        'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+        'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+    },
+    'HIDE_USERS': False,
 }
