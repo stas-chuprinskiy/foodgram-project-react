@@ -1,19 +1,16 @@
-from io import BytesIO
-
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.template.loader import get_template
+from django.template import loader
 from djoser.views import UserViewSet
-
+from pdfkit import from_string
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import (CreateModelMixin, DestroyModelMixin,
                                    ListModelMixin, RetrieveModelMixin)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from xhtml2pdf import pisa
 
 from api.permissions import IsOwnerOrReadOnly
 from api.serializers import (CommonRecipeSerializer, FavoriteSerializer,
@@ -34,12 +31,11 @@ class CustomUserViewSet(UserViewSet):
         self.get_object = self.get_instance
         if request.method == "GET":
             return self.retrieve(request, *args, **kwargs)
-        elif request.method == "PUT":
+        if request.method == "PUT":
             return self.update(request, *args, **kwargs)
-        elif request.method == "PATCH":
+        if request.method == "PATCH":
             return self.partial_update(request, *args, **kwargs)
-        elif request.method == "DELETE":
-            return self.destroy(request, *args, **kwargs)
+        return self.destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=['GET', ],
             permission_classes=[IsAuthenticated, ])
@@ -66,9 +62,7 @@ class IngredientViewSet(ListModelMixin, RetrieveModelMixin,
     def get_queryset(self):
         queryset = Ingredient.objects.all()
         name = self.request.query_params.get('name')
-        if name:
-            queryset = queryset.filter(name__istartswith=name)
-        return queryset
+        return queryset.filter(name__istartswith=name) if name else queryset
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -115,15 +109,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'ingredients': ingredients
         }
 
-        template = get_template('shopping_cart.html')
-        html = template.render(context)
-        response = BytesIO()
-        pdf = pisa.pisaDocument(BytesIO(html.encode('UTF-8')), response)
-        if pdf.err:
-            return HttpResponse('We had some errors :(')
-        return HttpResponse(
-            response.getvalue(), content_type='application/pdf'
-        )
+        html = loader.render_to_string('shopping_cart.html', context=context)
+        output = from_string(html, output_path=False)
+        response = HttpResponse(content_type='application/pdf')
+        response.write(output)
+        return response
 
 
 class BaseViewSet(CreateModelMixin, DestroyModelMixin,
