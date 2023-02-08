@@ -74,23 +74,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
         queryset = Recipe.objects.all()
         user = self.request.user
 
-        is_favorited = self.request.query_params.get('is_favorited')
-        is_in_shopping_cart = (
-            self.request.query_params.get('is_in_shopping_cart')
-        )
-        author = self.request.query_params.get('author')
-        tags = self.request.query_params.getlist('tags')
-
         if self.request.method == 'GET':
-            if is_favorited == '1' and user.is_authenticated:
-                queryset = queryset.filter(favorites__user=user)
-            if is_in_shopping_cart == '1' and user.is_authenticated:
-                queryset = queryset.filter(shopping_cart__user=user)
-            if author and author.isdigit():
-                queryset = queryset.filter(author__id=int(author))
-            if tags:
-                queryset = queryset.filter(tags__slug__in=tags).distinct()
-
+            for key, value in self.request.query_params.items():
+                if (key == 'is_favorited' and value == '1'
+                        and user.is_authenticated):
+                    queryset = queryset.filter(favorites__user=user)
+                if (key == 'is_in_shopping_cart' and value == '1'
+                        and user.is_authenticated):
+                    queryset = queryset.filter(shopping_cart__user=user)
+                if key == 'author' and value.isdigit():
+                    queryset = queryset.filter(author__id=int(value))
+                if key == 'tags':
+                    value = self.request.query_params.getlist('tags')
+                    queryset = queryset.filter(tags__slug__in=value).distinct()
         return queryset
 
     @action(detail=False, methods=['GET', ],
