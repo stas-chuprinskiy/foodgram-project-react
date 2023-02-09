@@ -134,7 +134,9 @@ class RecipeSerializer(serializers.ModelSerializer):
                 ingredient=ingredient['id'], recipe=recipe
             )
             if recipe_ingredient.exists():
-                recipe_ingredient.update(amount=amount)
+                obj = recipe_ingredient.get()
+                obj.amount += amount
+                obj.save()
             else:
                 RecipeIngredient.objects.create(
                     ingredient=ingredient['id'], recipe=recipe, amount=amount
@@ -168,7 +170,9 @@ class RecipeSerializer(serializers.ModelSerializer):
                     ingredient=ingredient['id'], recipe=instance
                 )
                 if recipe_ingredient.exists():
-                    recipe_ingredient.update(amount=amount)
+                    obj = recipe_ingredient.get()
+                    obj.amount += amount
+                    obj.save()
                 else:
                     RecipeIngredient.objects.create(
                         ingredient=ingredient['id'], recipe=instance,
