@@ -10,9 +10,10 @@ RUN tar xvJf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
 RUN cp wkhtmltox/bin/wkhtmlto* /usr/bin/
 
 RUN mkdir /app
-COPY requirements.txt /app
+COPY ./backend/requirements.txt /app
 RUN pip3 install -r /app/requirements.txt --no-cache-dir
-COPY ./ /app
+COPY ./backend/. /app
+COPY ./data /data
 WORKDIR /app
 
 CMD ["gunicorn", "foodgram.wsgi:application", "--bind", "0:8000"]
