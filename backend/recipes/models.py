@@ -5,8 +5,8 @@ User = get_user_model()
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=40, verbose_name='name')
-    color = models.CharField(max_length=16, verbose_name='color')
+    name = models.CharField(max_length=40, unique=True, verbose_name='name')
+    color = models.CharField(max_length=16, unique=True, verbose_name='color')
     slug = models.SlugField(unique=True, verbose_name='slug')
 
     class Meta:
@@ -99,7 +99,7 @@ class RecipeIngredient(models.Model):
 
     def __str__(self):
         return (
-            f'Ingredient {self.ingredient.name} in recipe {self.recipe.name}'
+            f'Ingredient {self.ingredient_id} in recipe {self.recipe_id}'
         )
 
 
@@ -125,7 +125,7 @@ class ShoppingCart(models.Model):
 
     def __str__(self):
         return (
-            f'Recipe {self.recipe.id} in {self.user.username} shopping cart'
+            f'Recipe {self.recipe_id} in {self.user_id} shopping cart'
         )
 
 
@@ -151,7 +151,7 @@ class Favorite(models.Model):
 
     def __str__(self):
         return (
-            f'Recipe {self.recipe.id} in {self.user.username} favorites'
+            f'Recipe {self.recipe_id} in {self.user_id} favorites'
         )
 
 
@@ -181,5 +181,5 @@ class Subscription(models.Model):
 
     def __str__(self):
         return (
-            f'User {self.user.username} follows author {self.author.username}'
+            f'User {self.user_id} follows author {self.author_id}'
         )

@@ -14,3 +14,11 @@ class User(AbstractUser):
         verbose_name = 'user'
         verbose_name_plural = 'users'
         ordering = ('pk', )
+
+    @property
+    def is_moderator(self):
+        return self.is_staff
+
+    @property
+    def is_admin(self):
+        return self.is_superuser
