@@ -25,6 +25,15 @@ services:
       - database
     env_file:
       - .env
+  
+  foodgram_frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ../frontend/:/app/result_build/
+    depends_on:
+      - foodgram_backend
 
   nginx:
     image: nginx:1.19.3
@@ -37,4 +46,4 @@ services:
       - foodgram_static:/var/html/backend_static/
       - foodgram_media:/var/html/media/
     depends_on:
-      - foodgram_backend
+      - foodgram_frontend
