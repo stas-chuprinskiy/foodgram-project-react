@@ -3,6 +3,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template import loader
+from django_filters import rest_framework as filters
 from djoser.views import UserViewSet
 from pdfkit import from_string
 from rest_framework import status, viewsets
@@ -12,7 +13,8 @@ from rest_framework.mixins import (CreateModelMixin, DestroyModelMixin,
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.permissions import IsOwnerOrReadOnly
+from api.filters import IngredientFilter, RecipeFilter
+from api.permissions import IsAdminModeratorOwnerOrReadOnly
 from api.serializers import (CommonRecipeSerializer, FavoriteSerializer,
                              IngredientSerializer, RecipeSerializer,
                              ShoppingCartSerializer, SubscribeSerializer,
@@ -28,14 +30,7 @@ class CustomUserViewSet(UserViewSet):
     @action(["get", "put", "patch", "delete"], detail=False,
             permission_classes=[IsAuthenticated, ])
     def me(self, request, *args, **kwargs):
-        self.get_object = self.get_instance
-        if request.method == "GET":
-            return self.retrieve(request, *args, **kwargs)
-        if request.method == "PUT":
-            return self.update(request, *args, **kwargs)
-        if request.method == "PATCH":
-            return self.partial_update(request, *args, **kwargs)
-        return self.destroy(request, *args, **kwargs)
+        return super().me(request, *args, **kwargs)
 
     @action(detail=False, methods=['GET', ],
             permission_classes=[IsAuthenticated, ])
@@ -56,38 +51,20 @@ class TagViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
 
 class IngredientViewSet(ListModelMixin, RetrieveModelMixin,
                         viewsets.GenericViewSet):
+    queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    filter_backends = (filters.DjangoFilterBackend, )
+    filterset_class = IngredientFilter
     pagination_class = None
-
-    def get_queryset(self):
-        queryset = Ingredient.objects.all()
-        name = self.request.query_params.get('name')
-        return queryset.filter(name__istartswith=name) if name else queryset
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = [IsOwnerOrReadOnly, ]
+    filter_backends = (filters.DjangoFilterBackend, )
+    filterset_class = RecipeFilter
+    permission_classes = [IsAdminModeratorOwnerOrReadOnly, ]
     http_method_names = ['get', 'post', 'patch', 'delete']
-
-    def get_queryset(self):
-        queryset = Recipe.objects.all()
-        user = self.request.user
-
-        if self.request.method == 'GET':
-            for key, value in self.request.query_params.items():
-                if (key == 'is_favorited' and value == '1'
-                        and user.is_authenticated):
-                    queryset = queryset.filter(favorites__user=user)
-                if (key == 'is_in_shopping_cart' and value == '1'
-                        and user.is_authenticated):
-                    queryset = queryset.filter(shopping_cart__user=user)
-                if key == 'author' and value.isdigit():
-                    queryset = queryset.filter(author__id=int(value))
-                if key == 'tags':
-                    value = self.request.query_params.getlist('tags')
-                    queryset = queryset.filter(tags__slug__in=value).distinct()
-        return queryset
 
     @action(detail=False, methods=['GET', ],
             permission_classes=[IsAuthenticated, ])
