@@ -136,4 +136,4 @@ requirements-dev.txt
 
 # media
 media/
-static/
+backend_static/
