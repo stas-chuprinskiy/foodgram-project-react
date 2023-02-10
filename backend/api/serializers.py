@@ -1,9 +1,6 @@
-import base64
-
 from django.contrib.auth import get_user_model
-from django.core.files.base import ContentFile
-from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -67,16 +64,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         return value
 
 
-class Base64ImageField(serializers.ImageField):
-
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super().to_internal_value(data)
-
-
 class RecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     ingredients = RecipeIngredientSerializer(
@@ -119,28 +106,25 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get('request')
-        author = get_object_or_404(User, id=request.user.id)
         tags = validated_data.pop('tags')
         ingredients_set = validated_data.pop('ingredients_set')
 
-        recipe = Recipe.objects.create(author=author, **validated_data)
+        recipe = Recipe.objects.create(author=request.user, **validated_data)
 
-        for tag in tags:
-            recipe.tags.add(tag)
+        recipe.tags.set(tags)
 
-        for obj in ingredients_set:
-            ingredient, amount = {**obj}.values()
-            recipe_ingredient = RecipeIngredient.objects.filter(
-                ingredient=ingredient['id'], recipe=recipe
-            )
-            if recipe_ingredient.exists():
-                obj = recipe_ingredient.get()
-                obj.amount += amount
-                obj.save()
-            else:
-                RecipeIngredient.objects.create(
-                    ingredient=ingredient['id'], recipe=recipe, amount=amount
+        recipe_ingredient_set = []
+        for item in ingredients_set:
+            ingredient = item.get('ingredient')['id']
+            amount = item.get('amount')
+            recipe_ingredient_set.append(
+                RecipeIngredient(
+                    recipe=recipe, ingredient=ingredient, amount=amount
                 )
+            )
+        RecipeIngredient.objects.bulk_create(
+            recipe_ingredient_set, ignore_conflicts=True
+        )
 
         return recipe
 
@@ -153,33 +137,28 @@ class RecipeSerializer(serializers.ModelSerializer):
                 'cooking_time', instance.cooking_time
             )
 
-        if 'tags' in validated_data:
-            instance.tags.clear()
+            if 'tags' in validated_data:
+                tags = validated_data.pop('tags')
+                instance.tags.set(tags)
 
-            tags = validated_data.pop('tags')
-            for tag in tags:
-                instance.tags.add(tag)
-
-        if 'ingredients_set' in validated_data:
-            instance.ingredients_set.all().delete()
-
-            ingredients_set = validated_data.pop('ingredients_set')
-            for obj in ingredients_set:
-                ingredient, amount = {**obj}.values()
-                recipe_ingredient = RecipeIngredient.objects.filter(
-                    ingredient=ingredient['id'], recipe=instance
-                )
-                if recipe_ingredient.exists():
-                    obj = recipe_ingredient.get()
-                    obj.amount += amount
-                    obj.save()
-                else:
-                    RecipeIngredient.objects.create(
-                        ingredient=ingredient['id'], recipe=instance,
-                        amount=amount
+            if 'ingredients_set' in validated_data:
+                ingredients_set = validated_data.pop('ingredients_set')
+                instance.ingredients_set.all().delete()
+                recipe_ingredient_set = []
+                for item in ingredients_set:
+                    ingredient = item.get('ingredient')['id']
+                    amount = item.get('amount')
+                    recipe_ingredient_set.append(
+                        RecipeIngredient(
+                            recipe=instance, ingredient=ingredient,
+                            amount=amount
+                        )
                     )
+                RecipeIngredient.objects.bulk_create(
+                    recipe_ingredient_set, ignore_conflicts=True
+                )
 
-        instance.save()
+            instance.save()
         return instance
 
 
@@ -231,7 +210,6 @@ class SubscriptionSerializer(CustomUserSerializer):
 
     def get_recipes(self, obj):
         recipes = obj.recipes.all()
-
         recipes_limit = (
             self.context.get('request').query_params.get('recipes_limit')
         )
