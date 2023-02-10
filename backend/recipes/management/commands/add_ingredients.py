@@ -8,7 +8,7 @@ from recipes.models import Ingredient
 
 logger = logging.getLogger(__name__)
 
-DATA_PATH = BASE_DIR.parent.joinpath('data')
+DATA_PATH = BASE_DIR.joinpath('fixtures')
 
 DATA_FILES = {
     'ingredients.csv': (Ingredient, ['name', 'measurement_unit']),
@@ -20,14 +20,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for file_name in DATA_FILES:
-            file_path = DATA_PATH.joinpath(file_name)
+            file = DATA_PATH.joinpath(file_name)
             model, fieldnames = DATA_FILES[file_name]
 
-            with open(file_path, mode='r') as file:
-                reader = csv.DictReader(file, fieldnames=fieldnames)
-                for row in reader:
+            if file.exists():
+                with open(file, mode='r') as file:
+                    reader = csv.DictReader(file, fieldnames=fieldnames)
+                    data = [model(**row) for row in reader]
                     try:
-                        instance = model.objects.get_or_create(**row)
-                        logger.info(instance)
+                        logger.info(model.objects.bulk_create(data))
                     except Exception as err:
                         logger.error(err, exc_info=True)
+            else:
+                logger.error(f'File "{file_name}" does not exist at: {file}')
