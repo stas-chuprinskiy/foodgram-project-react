@@ -5,32 +5,37 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-ENV_FILE = BASE_DIR.parent.joinpath('infra/.env')
-
-load_dotenv(ENV_FILE)
+load_dotenv()
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]']
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
 
-    'api',
-    'recipes',
-    'users',
-
-    'djoser',
+THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'djoser',
+    'django_filters',
 ]
+
+LOCAL_APPS = [
+    'users',
+    'recipes',
+    'api',
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -102,9 +107,9 @@ USE_TZ = True
 
 AUTH_USER_MODEL = 'users.User'
 
-STATIC_URL = '/static_backend/'
+STATIC_URL = '/backend_static/'
 
-STATIC_ROOT = BASE_DIR.joinpath('static_backend')
+STATIC_ROOT = BASE_DIR.joinpath('backend_static')
 
 MEDIA_URL = '/media/'
 
