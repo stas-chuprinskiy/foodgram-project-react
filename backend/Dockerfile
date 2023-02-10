@@ -1,5 +1,4 @@
 FROM python:3.10-slim
-RUN /usr/local/bin/python -m pip install --upgrade pip
 
 RUN apt-get update
 RUN apt-get install -y wget
@@ -9,11 +8,9 @@ RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkh
 RUN tar xvJf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
 RUN cp wkhtmltox/bin/wkhtmlto* /usr/bin/
 
-RUN mkdir /app
-COPY ./backend/requirements.txt /app
-RUN pip3 install -r /app/requirements.txt --no-cache-dir
-COPY ./backend/. /app
-COPY ./data /data
-WORKDIR /app
+WORKDIR /foodgram --no-cache-dir
+COPY ./ ./
+RUN python3 -m pip install --upgrade pip --no-cache-dir
+RUN pip3 install -r requirements.txt
 
 CMD ["gunicorn", "foodgram.wsgi:application", "--bind", "0:8000"]
