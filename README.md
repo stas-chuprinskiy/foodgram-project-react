@@ -1,6 +1,7 @@
 # Foodgram - инстаграм из мира рецептов
 
 Изучайте авторские кулинарные шедевры и делитесь собственными :)
+
 *"Сытый считает звезды на небе, а голодный думает о хлебе"*.
 
 ### Технологии
@@ -8,8 +9,10 @@
 * Python 3.10
 * Django 4.1
 * DjangoRestFramework 3.14
+* Django-filter 22.1
+* Django-extra-fields 3.0
 * Djoser 2.1
-* Pdfkit 1.0
+* Wkhtmltopdf 0.12.4
 
 ### Приложение
 
@@ -17,54 +20,57 @@
 
 ### Установка
 
-- Клонируйте репозиторий
+> Для развертывания и тестирования проекта необходимо установить [Docker](https://docs.docker.com/engine/install/)
+
+- Клонируйте репозиторий:
 ```
 git clone <link>
 ```
 
-- Создайте и активируйте виртуальное окружение
-```
-python -m venv venv
-```
-
-- Перейдите в папку `infra`, создайте файл `.env`, добавьте соответствующие константы
+- Перейдите в папку `/infra`, создайте файл `.env`, определите соответствующие константы:
 ```
 DJANGO_SECRET_KEY=<value>
 
-DB_ENGINE=django.db.backends.postgresql
-DB_NAME=<value>
-DB_USER=<value>
-DB_PASSWORD=<value>
-DB_HOST=<value>
-DB_PORT=<value>
+POSTGRES_DB=<value>
+POSTGRES_USER=<value>
+POSTGRES_PASSWORD=<value>
+HOST=database
+PORT=5432
 ```
 
-- Перейдите в папку `backend`, установите зависимости
+- Выполните сборку проекта:
 ```
-pip install -r requirements.txt
-```
-
-- Примените миграции
-```
-python manage.py migrate
+docker-compose up -d
 ```
 
-- Наполните БД ингредиентами
+- Примените миграции:
 ```
-python manage.py add_ingredients
-```
-
-- Создайте суперпользователя
-```
-python manage.py createsuperuser
+docker-compose exec foodgram_backend python manage.py migrate
 ```
 
-- Запустите проект
+- Загрузите фикстуры:
 ```
-python manage.py runserver
+docker-compose exec foodgram_backend python manage.py loaddata fixtures/inital_data.json
+
+docker-compose exec foodgram_backend cp -r fixtures/img/ media/
 ```
 
-### Список доступных эндпойнтов
+- Соберите статические файлы бэкенда:
+```
+docker-compose exec foodgram_backend python manage.py collectstatic --no-input
+```
+
+- Создайте суперпользователя (при необходимости):
+```
+docker-compose exec foodgram_backend python manage.py createsuperuser
+```
+
+Станут доступны:
+* фронтенд - по адресу `localhost`;
+* API - по адресу `localhost/api/`;
+* документация API - по адресу `localhost/api/docs/`.
+
+### Список доступных эндпойнтов API
 
 * `users` - управление пользователями;
 * `auth` - аутентификация пользователей;
@@ -74,13 +80,6 @@ python manage.py runserver
 * `recipes/{id}/shopping_cart/` - список покупок;
 * `recipes/{id}/favorite/` - избранное;
 * `users/{id}/subscribe/` - подписки.
-
-Для доступа к документации API установите **Docker**, перейдите в папку `infra` и выполните команду:
-```
-sudo docker-compose up -d
-```
-
-Документация станет доступна по адресу: *http://localhost/api/docs/redoc.html*.
 
 ### Пользовательские роли
 
@@ -219,8 +218,6 @@ Authorization:"Token <token>"
 
 ### В следующем релизе
 
-* Наполнение проекта, создание фикстур;
-* Развертывание в контейнерах;
 * Деплой на сервер.
 
 ### Автор
