@@ -14,9 +14,7 @@ services:
       - .env
 
   foodgram_backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: chupss/foodgram:latest
     restart: always
     volumes:
       - foodgram_static:/foodgram/backend_static/
