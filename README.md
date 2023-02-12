@@ -1,4 +1,6 @@
-# Foodgram - инстаграм из мира рецептов
+https://github.com/stas-chuprinskiy/foodgram-project-react/actions/workflows/main.yml/badge.svg
+
+# Foodgram - инстаграм в мире рецептов
 
 Изучайте авторские кулинарные шедевры и делитесь собственными :)
 
