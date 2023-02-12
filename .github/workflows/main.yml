@@ -70,7 +70,7 @@ jobs:
         script: |
           cd ~/foodgram-project-react/infra
           docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest
-          docker-compose up -d --no-deps --build ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest
+          docker-compose up -d --no-deps --build foodgram_backend
 
   notify:
     runs-on: ubuntu-latest
