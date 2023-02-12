@@ -1,4 +1,4 @@
-https://github.com/stas-chuprinskiy/foodgram-project-react/actions/workflows/main.yml/badge.svg
+![Foodgram workflow](https://github.com/stas-chuprinskiy/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
 # Foodgram - инстаграм в мире рецептов
 
