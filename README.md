@@ -220,10 +220,6 @@ http -v GET 127.0.0.1:8000/api/recipes/download_shopping_cart/
 Authorization:"Token <token>"  
 ```
 
-### В следующем релизе
-
-* Деплой на сервер.
-
 ### Автор
 
 *Чупринский Станислав*
