@@ -106,7 +106,7 @@ docker-compose exec foodgram_backend python manage.py createsuperuser
 
 **Регистрация**
 ```
-http -v POST 127.0.0.1:8000/api/users/
+http -v POST localhost/api/users/
 email="<email>" username="<username>" password="<password>" first_name="first_name" last_name="last_name"
 ```
 
@@ -122,7 +122,7 @@ email="<email>" username="<username>" password="<password>" first_name="first_na
 
 **Получение токена авторизации**
 ```
-http -v POST 127.0.0.1:8000/api/auth/token/login/
+http -v POST localhost/api/auth/token/login/
 email="<email>" password="<password>"
 ```
 
@@ -134,7 +134,7 @@ email="<email>" password="<password>"
 
 **Получение списка ингредиентов**
 ```
-http -v GET 127.0.0.1:8000/api/ingredients/
+http -v GET localhost/api/ingredients/
 Authorization:"Token <token>"
 ```
 
@@ -151,7 +151,7 @@ Authorization:"Token <token>"
 
 **Создание рецепта**
 ```
-http -v POST 127.0.0.1:8000/api/recipes/
+http -v POST localhost/api/recipes/
 Authorization:"Token <token>" 
 tags=[<id>] ingredients=[{"id": <id>, "amount": <amount>}] name="<name>" image="<image>" text="<text>" cooking_time="<cooking_time>"
 ```
@@ -201,7 +201,7 @@ tags=[<id>] ingredients=[{"id": <id>, "amount": <amount>}] name="<name>" image="
 
 **Добавление рецепта в список покупок**
 ```
-http -v POST 127.0.0.1:8000/api/recipes/{id}/shopping_cart/
+http -v POST localhost/api/recipes/{id}/shopping_cart/
 Authorization:"Token <token>"  
 ```
 
@@ -216,7 +216,7 @@ Authorization:"Token <token>"
 
 **Скачивание списка покупок**
 ```
-http -v GET 127.0.0.1:8000/api/recipes/download_shopping_cart/
+http -v GET localhost/api/recipes/download_shopping_cart/
 Authorization:"Token <token>"  
 ```
 
